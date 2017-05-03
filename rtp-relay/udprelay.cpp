@@ -17,9 +17,13 @@ void UdpRelay::start(quint16 listenerPort, QHostAddress targetAddress, quint16 t
 
 void UdpRelay::onReadyRead()
 {
+    int sent;
     while(readSocket_.hasPendingDatagrams()) {
         QNetworkDatagram datagram = readSocket_.receiveDatagram();
-        writeSocket_.writeDatagram(datagram);
+        sent = writeSocket_.write(datagram.data());
         receivedPacket(datagram);
+        if (sent < 0) {
+            qDebug() << "Error due sending packages: " << writeSocket_.errorString();
+        }
     }
 }
