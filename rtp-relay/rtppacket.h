@@ -13,7 +13,7 @@ public:
     QString toString();
     QJsonObject toJsonObject();
 
-    static RtpPacket fromQByteArray(const QByteArray bytes);
+    static RtpPacket fromQByteArray(QByteArray bytes);
 
 private:
     quint16 byteLength_;
@@ -27,7 +27,6 @@ private:
     quint32 ssrc_;
     QVector<quint32> csrcList_;
     quint16 numberExtensions_;
-    QByteArray payload_;
 };
 
 #endif // RTPPACKET_H
