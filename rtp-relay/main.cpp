@@ -2,15 +2,21 @@
 
 #include "udprelay.h"
 #include "rtpanalyzer.h"
+#include "rtcpanalyzer.h"
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    UdpRelay relay;
-    RtpAnalyzer analyzer;
-    QObject::connect(&relay, &UdpRelay::receivedPacket, &analyzer, &RtpAnalyzer::analyzePacket);
-    relay.start(7070, QHostAddress::LocalHost, 7071);
+    UdpRelay rtpRelay;
+    RtpAnalyzer rtpAnalyzer;
+    QObject::connect(&rtpRelay, &UdpRelay::receivedPacket, &rtpAnalyzer, &RtpAnalyzer::analyzePacket);
+    rtpRelay.start(7070, QHostAddress::LocalHost, 7080);
+
+    UdpRelay rtcpRelay;
+    RtcpAnalyzer rtcpAnalyzer;
+    QObject::connect(&rtcpRelay, &UdpRelay::receivedPacket, &rtcpAnalyzer, &RtcpAnalyzer::analyzePacket);
+    rtcpRelay.start(7071, QHostAddress::LocalHost, 7081);
 
     return a.exec();
 }
