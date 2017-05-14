@@ -12,8 +12,6 @@ public:
 
     void analyzePacket(QNetworkDatagram packet);
 
-private:
-    quint8 counter_;
 };
 
 #endif // RTCPANALYZER_H
