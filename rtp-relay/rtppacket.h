@@ -9,24 +9,24 @@
 class RtpPacket
 {
 public:
-    RtpPacket();
     QString toString();
     QJsonObject toJsonObject();
-
     static RtpPacket fromQByteArray(QByteArray bytes);
 
+    quint16 byteLength;
+    bool padding;
+    bool extension;
+    quint8 csrcCount;
+    bool marker;
+    quint8 payloadType;
+    quint16 sequenceNumber;
+    quint32 timestamp;
+    quint32 ssrc;
+    QVector<quint32> csrcList;
+    quint16 numberExtensions;
+
 private:
-    quint16 byteLength_;
-    bool padding_;
-    bool extension_;
-    quint8 csrcCount_;
-    bool marker_;
-    quint8 payloadType_;
-    quint16 sequenceNumber_;
-    quint32 timestamp_;
-    quint32 ssrc_;
-    QVector<quint32> csrcList_;
-    quint16 numberExtensions_;
+    RtpPacket();
 };
 
 #endif // RTPPACKET_H

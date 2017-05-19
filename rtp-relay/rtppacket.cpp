@@ -1,4 +1,5 @@
 #include "rtppacket.h"
+#include "utils.h"
 #include <QDebug>
 #include <QJsonArray>
 #include <QtEndian>
@@ -27,23 +28,23 @@ QString RtpPacket::toString() {
 }
 
 QJsonObject RtpPacket::toJsonObject() {
-    QJsonArray csrcList;
-    for (quint32 csrc : csrcList_) {
-        csrcList.append(static_cast<qint64>(csrc));
+    QJsonArray jsonCsrcList;
+    for (quint32 csrc : csrcList) {
+        jsonCsrcList.append(static_cast<qint64>(csrc));
     }
     QJsonObject obj
     {
-        {"byteLength", byteLength_},
-        {"padding", padding_},
-        {"extension", extension_},
-        {"csrcCount", csrcCount_},
-        {"marker", marker_},
-        {"payloadType", payloadTypes[payloadType_]},
-        {"sequenceNumber", sequenceNumber_},
-        {"timestamp", static_cast<qint64>(timestamp_)},
-        {"ssrc", static_cast<qint64>(ssrc_)},
-        {"csrcList", csrcList},
-        {"numberExtensions", numberExtensions_}
+        {"byteLength", byteLength},
+        {"padding", padding},
+        {"extension", extension},
+        {"csrcCount", csrcCount},
+        {"marker", marker},
+        {"payloadType", payloadTypes[payloadType]},
+        {"sequenceNumber", sequenceNumber},
+        {"timestamp", static_cast<qint64>(timestamp)},
+        {"ssrc", static_cast<qint64>(ssrc)},
+        {"csrcList", jsonCsrcList},
+        {"numberExtensions", numberExtensions}
     };
     return obj;
 }
@@ -51,23 +52,23 @@ QJsonObject RtpPacket::toJsonObject() {
 RtpPacket RtpPacket::fromQByteArray(QByteArray bytes) {
 
     RtpPacket p;
-    p.byteLength_ = bytes.size();
+    p.byteLength = bytes.size();
     auto data = reinterpret_cast<unsigned char*>(bytes.data());
 
     // Parse bytes 0 - 12
-    p.padding_ = data[0] & 0x20;
-    p.extension_ = data[0] & 0x10;
-    p.csrcCount_ = data[0] & 0x0f;
-    p.marker_ = data[1] & 0x80;
-    p.payloadType_ = data[1] & 0x7f;
-    p.sequenceNumber_ = (data[2] << 8) | data[3];
-    p.timestamp_ = (data[4] << 24) | (data[5] << 16) | (data[6] << 8) | data[7];
-    p.ssrc_ = (data[8] << 24) | (data[9] << 16) | (data[10] << 8) | data[11];
+    p.padding = extractBits(data[0], 2, 1);
+    p.extension = extractBits(data[0], 3, 1);
+    p.csrcCount = extractBits(data[0], 4, 4);
+    p.marker = extractBits(data[1], 0, 1);
+    p.payloadType = extractBits(data[1], 1, 7);
+    p.sequenceNumber = qFromBigEndian<quint16>(data + 2);
+    p.timestamp = qFromBigEndian<quint32>(data + 4);
+    p.ssrc = qFromBigEndian<quint32>(data + 8);
 
     // Parse CSRC List
-    for (quint16 i = 0; i < p.csrcCount_; i++) {
+    for (quint16 i = 0; i < p.csrcCount; i++) {
         quint16 offset = 12 + 4 * i;
-        p.csrcList_.append(
+        p.csrcList.append(
                 (data[offset] << 24) |
                 (data[offset + 1] << 16) |
                 (data[offset + 2] << 8) |
@@ -75,18 +76,18 @@ RtpPacket RtpPacket::fromQByteArray(QByteArray bytes) {
     }
 
     // Skip Extension Headers
-    p.numberExtensions_ = 0;
-    unsigned char *payload = data + 12 + 4 * p.csrcCount_;
-    if (p.extension_) {
+    p.numberExtensions = 0;
+    unsigned char *payload = data + 12 + 4 * p.csrcCount;
+    if (p.extension) {
         quint16 extensionType = qFromBigEndian<quint16>(payload);
-        quint16 numberHeaders = *reinterpret_cast<quint16*>(payload + 2);
-        p.numberExtensions_ = numberHeaders;
+        quint16 numberHeaders = qFromBigEndian<quint16>(payload + 2);
+        p.numberExtensions = numberHeaders;
 
         unsigned char *currentExtension = payload + 4;
         for (quint16 i = 0; i < numberHeaders; i++) {
             quint8 numberDataBytes;
             if(extensionType == 0xBEDE) {
-                numberDataBytes = (currentExtension[0] & 0x0f) + 1;
+                numberDataBytes = extractBits(currentExtension[0], 4, 4) + 1;
             } else {
                 numberDataBytes = currentExtension[1];
             }
