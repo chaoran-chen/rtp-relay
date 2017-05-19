@@ -13,7 +13,8 @@ SOURCES += main.cpp \
     udprelay.cpp \
     rtpanalyzer.cpp \
     rtppacket.cpp \
-    rtcpanalyzer.cpp
+    rtcpanalyzer.cpp \
+    rtcppacket.cpp
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked deprecated (the exact warnings
@@ -30,4 +31,6 @@ HEADERS += \
     udprelay.h \
     rtpanalyzer.h \
     rtppacket.h \
-    rtcpanalyzer.h
+    rtcpanalyzer.h \
+    rtcppacket.h \
+    utils.h

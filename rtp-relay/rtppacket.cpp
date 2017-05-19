@@ -1,6 +1,7 @@
 #include "rtppacket.h"
 #include <QDebug>
 #include <QJsonArray>
+#include <QtEndian>
 #include <QJsonDocument>
 
 
@@ -77,7 +78,7 @@ RtpPacket RtpPacket::fromQByteArray(QByteArray bytes) {
     p.numberExtensions_ = 0;
     unsigned char *payload = data + 12 + 4 * p.csrcCount_;
     if (p.extension_) {
-        quint16 extensionType = *reinterpret_cast<quint16*>(payload);
+        quint16 extensionType = qFromBigEndian<quint16>(payload);
         quint16 numberHeaders = *reinterpret_cast<quint16*>(payload + 2);
         p.numberExtensions_ = numberHeaders;
 
