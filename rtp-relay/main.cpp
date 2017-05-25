@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     UdpRelay rtpRelay;
-    RtpAnalyzer rtpAnalyzer;
+    RtpAnalyzer rtpAnalyzer("log.txt");
     QObject::connect(&rtpRelay, &UdpRelay::receivedPacket, &rtpAnalyzer, &RtpAnalyzer::analyzePacket);
     rtpRelay.start(7070, QHostAddress::LocalHost, 7080);
 
